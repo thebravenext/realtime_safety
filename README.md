@@ -33,7 +33,7 @@ Built for industrial environments, The Brave Next helps organizations improve co
 
 ## Demo Preview
 
-The demo below shows SafetyX Pro detecting PPE violations, monitoring camera feeds, and generating live compliance alerts in real time.
+The demo below shows we detecting PPE violations, monitoring camera feeds, and generating live compliance alerts in real time.
 
 ---
 
@@ -65,7 +65,7 @@ The demo below shows SafetyX Pro detecting PPE violations, monitoring camera fee
 ## Project Structure
 
 ```bash
-SafetyX-Pro/
+Realtime_Safety/
 ├── app/
 │   ├── api/
 │   │   └── v1/
@@ -124,8 +124,8 @@ SafetyX-Pro/
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/thebravenext/Safety.git
-cd Safety
+git clone https://github.com/thebravenext/realtime_safety.git
+cd Realtime_Safety
 ```
 
 ### 2. Create Virtual Environment
