@@ -1,0 +1,13 @@
+services:
+  safetyx-pro:
+    build: .
+    container_name: safetyx-pro
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./app/static/violations:/app/app/static/violations
+    restart: unless-stopped

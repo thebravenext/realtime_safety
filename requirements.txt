@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sqlalchemy
+pydantic
+pydantic-settings
+opencv-python
+ultralytics
+numpy
+itsdangerous
+passlib[bcrypt]
+pytest
