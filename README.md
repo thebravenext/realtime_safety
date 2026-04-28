@@ -257,7 +257,6 @@ This project is proprietary software by The Brave Next Ltd.
 AI for Industrial Safety, Automation, and Computer Vision
 
 - Website: https://thebravenext.com
-- Product: https://thesafetyxpro.com
 - Email: najam@thebravenext.com
 
 ---
