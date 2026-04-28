@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-head">
+    <h1>Reports</h1>
+</section>
+
+<section class="top-cards-grid">
+    <div class="ui-card chart-card">
+        <div class="card-title">Overall Compliance</div>
+        <div class="report-big-number">{{ summary.compliance_rate }}</div>
+        <div class="report-subtext">Current overall safety compliance</div>
+    </div>
+
+    <div class="ui-card chart-card">
+        <div class="card-title">People In</div>
+        <div class="report-big-number">{{ counts.in_ }}</div>
+        <div class="report-subtext">Detected inward entries</div>
+    </div>
+
+    <div class="ui-card chart-card">
+        <div class="card-title">People Out</div>
+        <div class="report-big-number">{{ counts.out }}</div>
+        <div class="report-subtext">Detected outward exits</div>
+    </div>
+
+    <div class="ui-card chart-card">
+        <div class="card-title">Inside</div>
+        <div class="report-big-number">{{ counts.total_inside }}</div>
+        <div class="report-subtext">Live people count inside</div>
+    </div>
+</section>
+
+<section class="section-head">
+    <h2>Recent Notifications</h2>
+</section>
+
+<section class="notifications-list">
+    {% for item in notifications %}
+    <div class="notification-card">
+        <div class="notification-image">
+            {% if item.image_url %}
+            <img src="{{ item.image_url }}" alt="notification">
+            {% else %}
+            <div class="empty-img">No Image</div>
+            {% endif %}
+        </div>
+
+        <div class="notification-body">
+            <div class="notification-top">
+                <div class="notification-title">{{ item.violation_type }}</div>
+                <div class="notification-time">{{ item.timestamp }}</div>
+            </div>
+            <div class="notification-text">{{ item.message }}</div>
+            <div class="notification-meta">
+                Camera {{ item.camera_id }} | Person {{ item.person_id }} | Frame {{ item.frame_index }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

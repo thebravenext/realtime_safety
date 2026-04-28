@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-head">
+    <h1>Notifications</h1>
+</section>
+
+<section class="notifications-list">
+    {% for item in notifications %}
+    <div class="notification-card">
+        <div class="notification-image">
+            {% if item.image_url %}
+            <img src="{{ item.image_url }}" alt="notification">
+            {% else %}
+            <div class="empty-img">No Image</div>
+            {% endif %}
+        </div>
+
+        <div class="notification-body">
+            <div class="notification-top">
+                <div class="notification-title">{{ item.violation_type }}</div>
+                <div class="notification-time">{{ item.timestamp }}</div>
+            </div>
+            <div class="notification-text">{{ item.message }}</div>
+            <div class="notification-meta">
+                Camera {{ item.camera_id }} | Person {{ item.person_id }} | Frame {{ item.frame_index }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

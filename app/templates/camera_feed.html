@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-head">
+    <h1>Feed</h1>
+
+    <div class="page-head-right">
+        <div class="info-pill">
+            <span class="pill-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+                    <path d="M8 3v4"></path>
+                    <path d="M16 3v4"></path>
+                    <path d="M4 10h16"></path>
+                </svg>
+            </span>
+            <span>{{ today }}</span>
+        </div>
+
+        <div class="info-pill">
+            <span class="pill-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <path d="M12 8v4l3 2"></path>
+                </svg>
+            </span>
+            <span>{{ time_window }}</span>
+        </div>
+    </div>
+</section>
+
+<section class="feed-layout">
+    <div class="feed-left-list">
+        {% for cam in cameras %}
+        <button
+            type="button"
+            class="feed-list-card feed-switch-card {% if loop.first %}active-feed-card{% endif %}"
+            data-camera-id="{{ cam.id }}"
+            data-camera-name="{{ cam.name }}"
+            data-camera-source="{{ cam.source }}"
+            data-camera-model="{{ cam.selected_model_label }}"
+        >
+            <div class="feed-card-text">
+                <div class="feed-list-title">{{ cam.name }}</div>
+                <div class="feed-list-sub">{{ cam.source }}</div>
+                <div class="feed-list-model">{{ cam.selected_model_label }}</div>
+            </div>
+
+            <div class="feed-thumb">
+                <img src="/stream/{{ cam.id }}" alt="{{ cam.name }}">
+            </div>
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="feed-main-card">
+        {% if cameras %}
+        <div class="feed-main-title" id="mainFeedTitle">{{ cameras[0].name }}</div>
+        <div class="feed-main-sub" id="mainFeedSource">{{ cameras[0].source }}</div>
+        <div class="feed-main-model" id="mainFeedModel">{{ cameras[0].selected_model_label }}</div>
+
+        <div class="feed-main-frame">
+            <img id="mainFeedImage" src="/stream/{{ cameras[0].id }}" alt="{{ cameras[0].name }}">
+        </div>
+        {% else %}
+        <div class="feed-main-title">No Camera</div>
+        <div class="feed-empty">No camera available</div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+const switchCards = document.querySelectorAll('.feed-switch-card');
+const mainFeedTitle = document.getElementById('mainFeedTitle');
+const mainFeedSource = document.getElementById('mainFeedSource');
+const mainFeedModel = document.getElementById('mainFeedModel');
+const mainFeedImage = document.getElementById('mainFeedImage');
+
+switchCards.forEach(card => {
+    card.addEventListener('click', () => {
+        const camId = card.dataset.cameraId;
+        const camName = card.dataset.cameraName;
+        const camSource = card.dataset.cameraSource;
+        const camModel = card.dataset.cameraModel;
+
+        if (mainFeedTitle) mainFeedTitle.textContent = camName;
+        if (mainFeedSource) mainFeedSource.textContent = camSource;
+        if (mainFeedModel) mainFeedModel.textContent = camModel;
+        if (mainFeedImage) {
+            mainFeedImage.src = `/stream/${camId}`;
+            mainFeedImage.alt = camName;
+        }
+
+        switchCards.forEach(item => item.classList.remove('active-feed-card'));
+        card.classList.add('active-feed-card');
+    });
+});
+</script>
+{% endblock %}

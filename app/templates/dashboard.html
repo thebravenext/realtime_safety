@@ -1,0 +1,966 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-head">
+    <h1>Dashboard</h1>
+
+    <div class="page-head-right">
+        <button type="button" class="info-pill interactive-pill" id="calendarPill">
+            <span class="pill-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+                    <path d="M8 3v4"></path>
+                    <path d="M16 3v4"></path>
+                    <path d="M4 10h16"></path>
+                </svg>
+            </span>
+            <span id="calendarLabel">Today</span>
+        </button>
+
+        <button type="button" class="info-pill interactive-pill" id="timePill">
+            <span class="pill-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <path d="M12 8v4l3 2"></path>
+                </svg>
+            </span>
+            <span id="timeLabel">08:00 - 09:00 AM</span>
+        </button>
+
+        <div class="info-pill model-pill">
+            <span class="pill-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"></path>
+                    <path d="M12 12l8-4.5"></path>
+                    <path d="M12 12v9"></path>
+                    <path d="M12 12L4 7.5"></path>
+                </svg>
+            </span>
+            <select id="dashboardModelSelect">
+                {% for item in model_options %}
+                <option value="{{ item.value }}">{{ item.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <form id="removeAllDataForm" method="post" action="/remove-all-data"
+              onsubmit="return confirm('Are you sure? This will permanently remove all data from the database.');">
+            <button type="submit" class="danger-btn">Remove All Data</button>
+        </form>
+
+        <input type="date" id="calendarInput" class="hidden-native-picker">
+        <input type="time" id="timeInput" class="hidden-native-picker">
+    </div>
+</section>
+
+<section class="top-cards-grid">
+    <div class="ui-card chart-card">
+        <div class="card-title">Overall Compliance</div>
+        <div class="donut-chart-wrap">
+            <canvas id="overallComplianceChart"></canvas>
+        </div>
+        <div class="donut-legend">
+            <div><span class="legend-box blue"></span>{{ compliance_value }}% Wearing</div>
+            <div><span class="legend-box light"></span>{{ 100 - compliance_value }}% Not wearing</div>
+        </div>
+    </div>
+
+    <div class="ui-card chart-card">
+        <div class="card-title">PPE Compliance</div>
+
+        <div class="ppe-metric">
+            <div class="ppe-row-top">
+                <div class="ppe-left">
+                    <span class="ppe-icon helmet">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M5 13a7 7 0 0 1 14 0"></path>
+                            <path d="M5 13h14"></path>
+                            <path d="M8 13v2"></path>
+                        </svg>
+                    </span>
+                    <span>Helmet</span>
+                </div>
+                <div class="ppe-percent">{{ summary.hardhat }}%</div>
+            </div>
+            <div class="ppe-progress gold"><div style="width: {{ summary.hardhat }}%"></div></div>
+        </div>
+
+        <div class="ppe-metric">
+            <div class="ppe-row-top">
+                <div class="ppe-left">
+                    <span class="ppe-icon boots">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M6 15c2 0 3-2 3-4h3c0 3 2 5 5 5h1v3H6z"></path>
+                        </svg>
+                    </span>
+                    <span>Boots</span>
+                </div>
+                <div class="ppe-percent">{{ summary.vest }}%</div>
+            </div>
+            <div class="ppe-progress green"><div style="width: {{ summary.vest }}%"></div></div>
+        </div>
+
+        <div class="ppe-metric">
+            <div class="ppe-row-top">
+                <div class="ppe-left">
+                    <span class="ppe-icon glasses">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="8" cy="12" r="3"></circle>
+                            <circle cx="16" cy="12" r="3"></circle>
+                            <path d="M11 12h2"></path>
+                        </svg>
+                    </span>
+                    <span>Glasses</span>
+                </div>
+                <div class="ppe-percent">{{ summary.mask }}%</div>
+            </div>
+            <div class="ppe-progress mint"><div style="width: {{ summary.mask }}%"></div></div>
+        </div>
+
+        <div class="ppe-metric">
+            <div class="ppe-row-top">
+                <div class="ppe-left">
+                    <span class="ppe-icon mask">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M8 10h8v5a4 4 0 0 1-8 0z"></path>
+                            <path d="M8 11l-2-1"></path>
+                            <path d="M16 11l2-1"></path>
+                        </svg>
+                    </span>
+                    <span>Mask</span>
+                </div>
+                <div class="ppe-percent">{{ summary.gloves }}%</div>
+            </div>
+            <div class="ppe-progress red"><div style="width: {{ summary.gloves }}%"></div></div>
+        </div>
+    </div>
+
+    <div class="ui-card chart-card">
+        <div class="card-title">PPE Violation Over Time</div>
+        <div class="line-top-label">Count</div>
+        <div class="line-chart-wrap">
+            <canvas id="violationLineChart"></canvas>
+        </div>
+        <div class="line-bottom-label">Dates</div>
+    </div>
+
+    <div class="ui-card chart-card">
+        <div class="card-title">Alerts</div>
+        <div class="pie-chart-wrap">
+            <canvas id="alertPieChart"></canvas>
+        </div>
+
+        <div class="pie-legend-grid">
+            <div><span class="legend-box pie1"></span>Q1</div>
+            <div><span class="legend-box pie2"></span>Q2</div>
+            <div><span class="legend-box pie3"></span>Q3</div>
+            <div><span class="legend-box pie4"></span>Q4</div>
+            <div><span class="legend-box pie5"></span>Q5</div>
+            <div><span class="legend-box pie6"></span>Q6</div>
+        </div>
+    </div>
+</section>
+
+<section class="section-head">
+    <h2>PPE Alerts</h2>
+</section>
+
+<section class="alerts-row-grid">
+    <div class="ui-card mini-alert-card">
+        <div class="mini-top">
+            <span class="mini-icon helmet">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 13a7 7 0 0 1 14 0"></path>
+                    <path d="M5 13h14"></path>
+                    <path d="M8 13v2"></path>
+                </svg>
+            </span>
+            <span class="mini-label">Helmet</span>
+        </div>
+        <div class="mini-number">{{ alerts.hardhat.count }}</div>
+        <div class="mini-down">↓ {{ alerts.hardhat.drop }}% Down</div>
+    </div>
+
+    <div class="ui-card mini-alert-card">
+        <div class="mini-top">
+            <span class="mini-icon boots">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 15c2 0 3-2 3-4h3c0 3 2 5 5 5h1v3H6z"></path>
+                </svg>
+            </span>
+            <span class="mini-label">Boots</span>
+        </div>
+        <div class="mini-number">{{ alerts.vest.count }}</div>
+        <div class="mini-down">↓ {{ alerts.vest.drop }}% Down</div>
+    </div>
+
+    <div class="ui-card mini-alert-card">
+        <div class="mini-top">
+            <span class="mini-icon glasses">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="8" cy="12" r="3"></circle>
+                    <circle cx="16" cy="12" r="3"></circle>
+                    <path d="M11 12h2"></path>
+                </svg>
+            </span>
+            <span class="mini-label">Glasses</span>
+        </div>
+        <div class="mini-number">{{ alerts.mask.count }}</div>
+        <div class="mini-down">↓ {{ alerts.mask.drop }}% Down</div>
+    </div>
+
+    <div class="ui-card mini-alert-card">
+        <div class="mini-top">
+            <span class="mini-icon mask">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M8 10h8v5a4 4 0 0 1-8 0z"></path>
+                    <path d="M8 11l-2-1"></path>
+                    <path d="M16 11l2-1"></path>
+                </svg>
+            </span>
+            <span class="mini-label">Mask</span>
+        </div>
+        <div class="mini-number">{{ alerts.gloves.count }}</div>
+        <div class="mini-down">↓ {{ alerts.gloves.drop }}% Down</div>
+    </div>
+
+    <div class="ui-card mini-alert-card">
+        <div class="mini-top">
+            <span class="mini-icon gloves">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M8 12V7a1 1 0 1 1 2 0v4"></path>
+                    <path d="M10 11V6a1 1 0 1 1 2 0v5"></path>
+                    <path d="M12 11V7a1 1 0 1 1 2 0v4"></path>
+                    <path d="M14 12V8a1 1 0 1 1 2 0v6a4 4 0 0 1-8 0v-3a1 1 0 1 1 2 0v1"></path>
+                </svg>
+            </span>
+            <span class="mini-label">Gloves</span>
+        </div>
+        <div class="mini-number">{{ counts.total_inside }}</div>
+        <div class="mini-live">Live Count</div>
+    </div>
+</section>
+
+<section class="section-head">
+    <h2>Area / Alert Intensity Heatmap</h2>
+
+    <div class="heatmap-view-switch">
+        <button type="button" class="heatmap-view-btn active" id="monthlyHeatmapBtn">Monthly</button>
+        <button type="button" class="heatmap-view-btn" id="yearlyHeatmapBtn">Yearly</button>
+    </div>
+</section>
+
+<section class="ui-card category-heatmap-card">
+    <div class="category-heatmap-header">
+        <div>
+            <div class="category-heatmap-subtitle">Monthly view shows one month only.</div>
+        </div>
+
+        <div class="heatmap-current-month-label" id="currentMonthLabel"></div>
+    </div>
+
+    <div class="category-heatmap-camera-strip" id="heatmapCameraStrip"></div>
+
+    <div class="category-heatmap-scroll">
+        <div class="monthly-heatmap-shell">
+            <div class="monthly-heatmap-top">
+                <div class="monthly-heatmap-top-left"></div>
+                <div class="monthly-heatmap-days-head" id="monthlyHeatmapDaysHead"></div>
+            </div>
+
+            <div class="monthly-heatmap-body">
+                <div class="monthly-heatmap-labels" id="monthlyHeatmapLabels"></div>
+                <div class="monthly-heatmap-grid-area" id="monthlyHeatmapGridArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category-heatmap-footer">
+        <span class="category-heatmap-help">1 box = 1 day</span>
+
+        <div class="category-heatmap-legend">
+            <span class="legend-text">Less</span>
+            <span class="daily-legend-box level-0"></span>
+            <span class="daily-legend-box level-1"></span>
+            <span class="daily-legend-box level-2"></span>
+            <span class="daily-legend-box level-3"></span>
+            <span class="daily-legend-box level-4"></span>
+            <span class="legend-text">More</span>
+        </div>
+    </div>
+</section>
+
+<div class="heatmap-tooltip" id="heatmapTooltip"></div>
+
+<div class="yearly-heatmap-overlay" id="yearlyHeatmapOverlay"></div>
+
+<div class="yearly-heatmap-modal" id="yearlyHeatmapModal">
+    <div class="yearly-heatmap-header">
+        <div>
+            <div class="yearly-heatmap-title">Yearly Alert Heatmap</div>
+            <div class="yearly-heatmap-subtitle">Full-year data by category and date</div>
+        </div>
+
+        <button type="button" class="yearly-heatmap-close" id="yearlyHeatmapClose">×</button>
+    </div>
+
+    <div class="category-heatmap-camera-strip" id="yearlyHeatmapCameraStrip"></div>
+
+    <div class="yearly-heatmap-scroll">
+        <div class="yearly-heatmap-shell">
+            <div class="yearly-heatmap-top">
+                <div class="yearly-heatmap-top-left"></div>
+                <div class="yearly-heatmap-months" id="yearlyHeatmapMonths"></div>
+            </div>
+
+            <div class="yearly-heatmap-body">
+                <div class="yearly-heatmap-labels" id="yearlyHeatmapLabels"></div>
+                <div class="yearly-heatmap-grid-area" id="yearlyHeatmapGridArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="yearly-heatmap-footer">
+        <div class="category-heatmap-legend">
+            <span class="legend-text">Less</span>
+            <span class="daily-legend-box level-0"></span>
+            <span class="daily-legend-box level-1"></span>
+            <span class="daily-legend-box level-2"></span>
+            <span class="daily-legend-box level-3"></span>
+            <span class="daily-legend-box level-4"></span>
+            <span class="legend-text">More</span>
+        </div>
+    </div>
+</div>
+
+<section class="section-head">
+    <h2>Latest Alerts</h2>
+    <a href="/notifications" class="view-all-btn">View all</a>
+</section>
+
+<section class="latest-alerts-grid">
+    {% for item in violations[:5] %}
+    <div class="latest-alert-col">
+        <div class="latest-image-card">
+            {% if item.image_url %}
+            <img src="{{ item.image_url }}" alt="alert image">
+            {% else %}
+            <div class="empty-img">No Image</div>
+            {% endif %}
+        </div>
+        <div class="latest-title">{{ item.gate }}</div>
+    </div>
+    {% endfor %}
+</section>
+
+<script>
+const complianceValue = {{ compliance_value|tojson }};
+const violationLabels = {{ violation_chart_labels|tojson }};
+const violationValues = {{ violation_chart_values|tojson }};
+
+const centerTextPlugin = {
+    id: "centerTextPlugin",
+    afterDraw(chart) {
+        if (chart.config.type !== "doughnut") return;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta.data || !meta.data.length) return;
+
+        const x = meta.data[0].x;
+        const y = meta.data[0].y;
+        const ctx = chart.ctx;
+
+        ctx.save();
+        ctx.font = "700 22px Arial";
+        ctx.fillStyle = "#2f72e5";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(complianceValue + "%", x, y);
+        ctx.restore();
+    }
+};
+
+new Chart(document.getElementById("overallComplianceChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Wearing", "Not wearing"],
+        datasets: [{
+            data: [complianceValue, 100 - complianceValue],
+            backgroundColor: ["#2f72e5", "#d8e7f8"],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: { legend: { display: false } }
+    },
+    plugins: [centerTextPlugin]
+});
+
+new Chart(document.getElementById("violationLineChart"), {
+    type: "line",
+    data: {
+        labels: violationLabels,
+        datasets: [{
+            data: violationValues,
+            borderColor: "#4c89de",
+            borderWidth: 2.2,
+            fill: false,
+            tension: 0.42,
+            pointRadius: 0
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: "#7e8693", font: { size: 11 } },
+                border: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: "#edf1f5" },
+                ticks: { color: "#7e8693", font: { size: 11 } },
+                border: { display: false }
+            }
+        }
+    }
+});
+
+new Chart(document.getElementById("alertPieChart"), {
+    type: "pie",
+    data: {
+        labels: ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"],
+        datasets: [{
+            data: [
+                {{ alerts.hardhat.count }},
+                {{ alerts.vest.count }},
+                {{ alerts.mask.count }},
+                {{ alerts.gloves.count }},
+                {{ summary.hardhat }},
+                {{ summary.vest }}
+            ],
+            backgroundColor: ["#0f6fd6", "#238be1", "#4ea7eb", "#7fc2f3", "#b5ddfa", "#d9eefc"],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+    }
+});
+
+const calendarInput = document.getElementById("calendarInput");
+const timeInput = document.getElementById("timeInput");
+const calendarLabel = document.getElementById("calendarLabel");
+const timeLabel = document.getElementById("timeLabel");
+
+function formatDateLabel(value) {
+    if (!value) return "Today";
+    const d = new Date(value + "T00:00:00");
+    return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function formatTimeLabel(value) {
+    if (!value) return "08:00 - 09:00 AM";
+    const [h, m] = value.split(":");
+    const base = new Date();
+    base.setHours(Number(h), Number(m), 0, 0);
+    const end = new Date(base.getTime() + 60 * 60 * 1000);
+    const startText = base.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const endText = end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return `${startText} - ${endText}`;
+}
+
+document.getElementById("calendarPill").addEventListener("click", () => {
+    if (calendarInput.showPicker) calendarInput.showPicker();
+    else calendarInput.click();
+});
+
+document.getElementById("timePill").addEventListener("click", () => {
+    if (timeInput.showPicker) timeInput.showPicker();
+    else timeInput.click();
+});
+
+calendarInput.addEventListener("change", () => {
+    calendarLabel.textContent = formatDateLabel(calendarInput.value);
+});
+
+timeInput.addEventListener("change", () => {
+    timeLabel.textContent = formatTimeLabel(timeInput.value);
+});
+
+const heatmapCameraMap = {
+    {% for cam in cameras %}
+    {{ cam.id }}: {
+        name: {{ cam.name|tojson }},
+        model: {{ cam.selected_model_label|tojson }}
+    },
+    {% endfor %}
+};
+
+const heatmapBaseNotifications = [
+    {% for item in notifications %}
+    {
+        camera_id: {{ item.camera_id }},
+        violation_type: {{ item.violation_type|tojson }},
+        timestamp: {{ item.timestamp|tojson }}
+    },
+    {% endfor %}
+];
+
+const hasBaseHeatmapData = heatmapBaseNotifications.length > 0;
+
+if (hasBaseHeatmapData) {
+    localStorage.setItem("heatmap_fake_data", "true");
+}
+
+const HEATMAP_USE_FAKE_DATA = localStorage.getItem("heatmap_fake_data") !== "false";
+
+function generateFakeHeatmapNotifications() {
+    const fakeCategories = [
+        "FIRE-ALERT",
+        "SMOKE-ALERT",
+        "NO-VEST",
+        "NO-MASK",
+        "NO-GLOVES",
+        "NO-HARDHAT",
+        "EMPTY-TRUCK-ALERT",
+        "NUMBER-PLATE"
+    ];
+
+    const cameraIds = Object.keys(heatmapCameraMap).length
+        ? Object.keys(heatmapCameraMap).map(id => Number(id))
+        : [1, 2, 3];
+
+    const now = new Date();
+    const year = now.getFullYear();
+
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, now.getMonth(), now.getDate());
+
+    const fakeData = [];
+    const cursor = new Date(startDate);
+
+    while (cursor <= endDate) {
+        const yyyy = cursor.getFullYear();
+        const mm = String(cursor.getMonth() + 1).padStart(2, "0");
+        const dd = String(cursor.getDate()).padStart(2, "0");
+
+        fakeCategories.forEach((category, catIndex) => {
+            if (cursor.getDay() === 0) return;
+
+            const alertCount = 1 + Math.floor(Math.random() * 4);
+
+            for (let i = 0; i < alertCount; i++) {
+                const camIndex = (cursor.getDate() + catIndex + i) % cameraIds.length;
+                const hour = String(8 + ((catIndex + i) % 10)).padStart(2, "0");
+                const minute = String((catIndex * 7 + i * 11) % 60).padStart(2, "0");
+
+                fakeData.push({
+                    camera_id: cameraIds[camIndex],
+                    violation_type: category,
+                    timestamp: `${yyyy}-${mm}-${dd} ${hour}:${minute}:00`
+                });
+            }
+        });
+
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return fakeData;
+}
+
+const heatmapNotifications = HEATMAP_USE_FAKE_DATA
+    ? generateFakeHeatmapNotifications()
+    : heatmapBaseNotifications;
+
+function parseHeatmapDate(value) {
+    if (!value) return null;
+
+    const direct = new Date(String(value).replace(" ", "T"));
+    if (!isNaN(direct.getTime())) return direct;
+
+    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return null;
+
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function dateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function formatTooltipDate(date) {
+    return date.toLocaleDateString(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+function getLevel(count, maxCount) {
+    if (count <= 0) return 0;
+    const ratio = count / Math.max(maxCount, 1);
+    if (ratio <= 0.25) return 1;
+    if (ratio <= 0.5) return 2;
+    if (ratio <= 0.75) return 3;
+    return 4;
+}
+
+function getOrderedCategories() {
+    const defaultCategories = [
+        "FIRE-ALERT",
+        "SMOKE-ALERT",
+        "NO-VEST",
+        "NO-MASK",
+        "NO-GLOVES",
+        "NO-HARDHAT",
+        "EMPTY-TRUCK-ALERT",
+        "NUMBER-PLATE"
+    ];
+
+    const existingTypes = [...new Set(heatmapNotifications.map(item => item.violation_type))];
+    const ordered = [
+        ...defaultCategories.filter(item => existingTypes.includes(item)),
+        ...existingTypes.filter(item => !defaultCategories.includes(item))
+    ];
+
+    return ordered.length ? ordered : defaultCategories;
+}
+
+function getLatestHeatmapDate() {
+    const parsedDates = heatmapNotifications
+        .map(item => parseHeatmapDate(item.timestamp))
+        .filter(Boolean)
+        .sort((a, b) => b - a);
+
+    if (parsedDates.length) {
+        const latest = new Date(parsedDates[0]);
+        latest.setHours(0, 0, 0, 0);
+        return latest;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+}
+
+function buildHeatmapData(year) {
+    const counts = {};
+    const details = {};
+    let maxCount = 0;
+
+    heatmapNotifications.forEach(item => {
+        const parsed = parseHeatmapDate(item.timestamp);
+        if (!parsed) return;
+        if (parsed.getFullYear() !== year) return;
+
+        parsed.setHours(0, 0, 0, 0);
+
+        const dKey = dateKey(parsed);
+        const cellKey = `${item.violation_type}__${dKey}`;
+
+        counts[cellKey] = (counts[cellKey] || 0) + 1;
+
+        if (!details[cellKey]) {
+            details[cellKey] = {
+                count: 0,
+                cameras: {},
+                models: {}
+            };
+        }
+
+        details[cellKey].count += 1;
+
+        const cam = heatmapCameraMap[item.camera_id];
+        if (cam) {
+            details[cellKey].cameras[cam.name] = (details[cellKey].cameras[cam.name] || 0) + 1;
+            details[cellKey].models[cam.model] = (details[cellKey].models[cam.model] || 0) + 1;
+        }
+
+        if (counts[cellKey] > maxCount) {
+            maxCount = counts[cellKey];
+        }
+    });
+
+    return { counts, details, maxCount };
+}
+
+function buildCameraChips(targetId) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    target.innerHTML = "";
+    const seen = [];
+
+    Object.values(heatmapCameraMap).forEach(cam => {
+        const text = `${cam.name} • ${cam.model}`;
+        if (!seen.includes(text)) seen.push(text);
+    });
+
+    seen.forEach(text => {
+        const chip = document.createElement("span");
+        chip.className = "category-heatmap-chip";
+        chip.textContent = text;
+        target.appendChild(chip);
+    });
+}
+
+function attachHeatmapTooltip(cell, category, day, info, tooltip) {
+    const cameraText = Object.entries(info.cameras || {})
+        .map(([name, c]) => `${name}: ${c}`)
+        .join("<br>");
+
+    const modelText = Object.entries(info.models || {})
+        .map(([name, c]) => `${name}: ${c}`)
+        .join("<br>");
+
+    cell.addEventListener("mouseenter", () => {
+        tooltip.innerHTML = `
+            <div class="heatmap-tooltip-date">${formatTooltipDate(day)}</div>
+            <div class="heatmap-tooltip-count">${category} — ${info.count || 0} alert(s)</div>
+            ${cameraText ? `<div class="heatmap-tooltip-block"><strong>Cameras</strong><br>${cameraText}</div>` : ""}
+            ${modelText ? `<div class="heatmap-tooltip-block"><strong>Models</strong><br>${modelText}</div>` : ""}
+        `;
+        tooltip.classList.add("show");
+    });
+
+    cell.addEventListener("mousemove", (e) => {
+        tooltip.style.left = `${e.pageX + 14}px`;
+        tooltip.style.top = `${e.pageY + 14}px`;
+    });
+
+    cell.addEventListener("mouseleave", () => {
+        tooltip.classList.remove("show");
+    });
+}
+
+function renderMonthlyHeatmap() {
+    const labelsContainer = document.getElementById("monthlyHeatmapLabels");
+    const gridArea = document.getElementById("monthlyHeatmapGridArea");
+    const daysHead = document.getElementById("monthlyHeatmapDaysHead");
+    const tooltip = document.getElementById("heatmapTooltip");
+    const currentMonthLabel = document.getElementById("currentMonthLabel");
+
+    if (!labelsContainer || !gridArea || !daysHead || !tooltip || !currentMonthLabel) return;
+
+    const latestDate = getLatestHeatmapDate();
+    const year = latestDate.getFullYear();
+    const month = latestDate.getMonth();
+
+    const data = buildHeatmapData(year);
+    const categories = getOrderedCategories();
+
+    const monthDate = new Date(year, month, 1);
+    const monthName = monthDate.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    currentMonthLabel.textContent = monthName;
+
+    const lastDay = new Date(year, month + 1, 0);
+    const days = [];
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+        days.push({
+            date: new Date(year, month, d),
+            isMonthStart: d === 1
+        });
+    }
+
+    const maxCount = Math.max(data.maxCount || 0, 1);
+
+    labelsContainer.innerHTML = "";
+    gridArea.innerHTML = "";
+    daysHead.innerHTML = "";
+
+    daysHead.style.gridTemplateColumns = `repeat(${days.length}, 24px)`;
+
+    days.forEach((item) => {
+        const head = document.createElement("div");
+        head.className = "monthly-heatmap-day-number";
+        head.textContent = item.date.getDate();
+
+        if (item.isMonthStart) {
+            head.classList.add("month-start-head");
+        }
+
+        daysHead.appendChild(head);
+    });
+
+    categories.forEach(category => {
+        const label = document.createElement("div");
+        label.className = "monthly-heatmap-label";
+        label.textContent = category;
+        labelsContainer.appendChild(label);
+
+        const row = document.createElement("div");
+        row.className = "monthly-heatmap-row";
+        row.style.gridTemplateColumns = `repeat(${days.length}, 24px)`;
+
+        days.forEach((item) => {
+            const dKey = dateKey(item.date);
+            const cellKey = `${category}__${dKey}`;
+            const count = data.counts[cellKey] || 0;
+            const info = data.details[cellKey] || { count: 0, cameras: {}, models: {} };
+            const level = getLevel(count, maxCount);
+
+            const cell = document.createElement("div");
+
+            if (item.date.getDay() === 0) {
+                cell.className = "monthly-heatmap-cell sunday-empty-cell";
+            } else {
+                cell.className = `monthly-heatmap-cell level-${level}`;
+
+                if (item.isMonthStart) {
+                    cell.classList.add("month-start-cell");
+                }
+
+                attachHeatmapTooltip(cell, category, item.date, info, tooltip);
+            }
+
+            row.appendChild(cell);
+        });
+
+        gridArea.appendChild(row);
+    });
+}
+
+function renderYearlyHeatmap() {
+    const labelsContainer = document.getElementById("yearlyHeatmapLabels");
+    const gridArea = document.getElementById("yearlyHeatmapGridArea");
+    const monthsContainer = document.getElementById("yearlyHeatmapMonths");
+    const tooltip = document.getElementById("heatmapTooltip");
+
+    if (!labelsContainer || !gridArea || !monthsContainer || !tooltip) return;
+
+    const latestDate = getLatestHeatmapDate();
+    const year = latestDate.getFullYear();
+    const { counts, details, maxCount } = buildHeatmapData(year);
+    const categories = getOrderedCategories();
+
+    const firstDate = new Date(year, 0, 1);
+    const lastDate = new Date(year, 11, 31);
+
+    const dates = [];
+    const loopDate = new Date(firstDate);
+    while (loopDate <= lastDate) {
+        dates.push(new Date(loopDate));
+        loopDate.setDate(loopDate.getDate() + 1);
+    }
+
+    labelsContainer.innerHTML = "";
+    gridArea.innerHTML = "";
+    monthsContainer.innerHTML = "";
+    monthsContainer.style.gridTemplateColumns = `repeat(${dates.length}, 24px)`;
+
+    const monthRanges = [];
+    let currentMonth = dates[0].getMonth();
+    let rangeStart = 0;
+
+    for (let i = 1; i <= dates.length; i++) {
+        const d = dates[i];
+        const changed = !d || d.getMonth() !== currentMonth;
+
+        if (changed) {
+            monthRanges.push({
+                label: dates[rangeStart].toLocaleDateString(undefined, { month: "short" }),
+                start: rangeStart,
+                end: i - 1
+            });
+
+            if (d) {
+                currentMonth = d.getMonth();
+                rangeStart = i;
+            }
+        }
+    }
+
+    monthRanges.forEach(item => {
+        const monthCell = document.createElement("div");
+        monthCell.className = "category-month-label";
+        monthCell.textContent = item.label;
+        monthCell.style.gridColumn = `${item.start + 1} / ${item.end + 2}`;
+        monthsContainer.appendChild(monthCell);
+    });
+
+    categories.forEach(category => {
+        const label = document.createElement("div");
+        label.className = "yearly-heatmap-label";
+        label.textContent = category;
+        labelsContainer.appendChild(label);
+
+        const row = document.createElement("div");
+        row.className = "yearly-heatmap-row";
+        row.style.gridTemplateColumns = `repeat(${dates.length}, 24px)`;
+
+        dates.forEach(day => {
+            const dKey = dateKey(day);
+            const cellKey = `${category}__${dKey}`;
+            const count = counts[cellKey] || 0;
+            const level = getLevel(count, Math.max(maxCount || 0, 1));
+
+            const cell = document.createElement("div");
+
+            if (day.getDay() === 0) {
+                cell.className = "yearly-heatmap-cell sunday-empty-cell";
+            } else {
+                cell.className = `yearly-heatmap-cell level-${level}`;
+                const info = details[cellKey] || { count: 0, cameras: {}, models: {} };
+                attachHeatmapTooltip(cell, category, day, info, tooltip);
+            }
+
+            row.appendChild(cell);
+        });
+
+        gridArea.appendChild(row);
+    });
+}
+
+const monthlyHeatmapBtn = document.getElementById("monthlyHeatmapBtn");
+const yearlyHeatmapBtn = document.getElementById("yearlyHeatmapBtn");
+const yearlyHeatmapOverlay = document.getElementById("yearlyHeatmapOverlay");
+const yearlyHeatmapModal = document.getElementById("yearlyHeatmapModal");
+const yearlyHeatmapClose = document.getElementById("yearlyHeatmapClose");
+
+function openYearlyHeatmap() {
+    renderYearlyHeatmap();
+    buildCameraChips("yearlyHeatmapCameraStrip");
+    yearlyHeatmapOverlay.classList.add("show");
+    yearlyHeatmapModal.classList.add("show");
+    monthlyHeatmapBtn.classList.remove("active");
+    yearlyHeatmapBtn.classList.add("active");
+    document.body.classList.add("drawer-open");
+}
+
+function closeYearlyHeatmap() {
+    yearlyHeatmapOverlay.classList.remove("show");
+    yearlyHeatmapModal.classList.remove("show");
+    yearlyHeatmapBtn.classList.remove("active");
+    monthlyHeatmapBtn.classList.add("active");
+    document.body.classList.remove("drawer-open");
+}
+
+monthlyHeatmapBtn.addEventListener("click", () => {
+    closeYearlyHeatmap();
+    renderMonthlyHeatmap();
+});
+
+yearlyHeatmapBtn.addEventListener("click", openYearlyHeatmap);
+yearlyHeatmapClose.addEventListener("click", closeYearlyHeatmap);
+yearlyHeatmapOverlay.addEventListener("click", closeYearlyHeatmap);
+
+const removeAllDataForm = document.getElementById("removeAllDataForm");
+if (removeAllDataForm) {
+    removeAllDataForm.addEventListener("submit", function () {
+        localStorage.setItem("heatmap_fake_data", "false");
+    });
+}
+
+buildCameraChips("heatmapCameraStrip");
+renderMonthlyHeatmap();
+</script>
+{% endblock %}

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Industrial Safety AI Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div>
+            <div class="logo-wrap">
+                <div class="logo-placeholder"></div>
+            </div>
+
+            <div class="sidebar-brand">
+                Industrial Safety AI Dashboard
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+                            <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+                        </svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="/camera-feed" class="nav-link {% if active_page == 'camera_feed' %}active{% endif %}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 7h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4z"></path>
+                            <path d="M16 10l4-2v8l-4-2z"></path>
+                        </svg>
+                    </span>
+                    <span>Camera Feed</span>
+                </a>
+
+                <a href="/notifications" class="nav-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3a4 4 0 0 0-4 4v2.2c0 .7-.2 1.3-.6 1.9L6 13.5V15h12v-1.5l-1.4-2.4c-.4-.6-.6-1.2-.6-1.9V7a4 4 0 0 0-4-4z"></path>
+                            <path d="M10 18a2 2 0 0 0 4 0"></path>
+                        </svg>
+                    </span>
+                    <span>Notifications</span>
+                </a>
+
+                <a href="/add-camera" class="nav-link {% if active_page == 'add_camera' %}active{% endif %}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 7h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4z"></path>
+                            <path d="M19 12h-4"></path>
+                            <path d="M17 10v4"></path>
+                        </svg>
+                    </span>
+                    <span>Add Camera</span>
+                </a>
+
+                <a href="/reports" class="nav-link {% if active_page == 'reports' %}active{% endif %}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M5 4h10a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"></path>
+                            <path d="M15 4v4h4"></path>
+                            <path d="M9 12h6"></path>
+                            <path d="M9 16h5"></path>
+                        </svg>
+                    </span>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="powered-text">Powered by</div>
+            <div class="powered-brand">THE BRAVE NEXT</div>
+        </div>
+    </aside>
+
+    <main class="main-area">
+        <header class="topbar">
+            <div class="topbar-title">Industrial Safety AI Dashboard</div>
+
+            <div class="topbar-right">
+                <div class="top-icons-group">
+                    <button type="button" class="top-icon-btn" aria-label="Search">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="11" cy="11" r="6"></circle>
+                            <path d="M20 20l-4.2-4.2"></path>
+                        </svg>
+                    </button>
+
+                    <button type="button" class="top-icon-btn bell-btn" id="alertBellBtn" aria-label="Notifications">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 4a4 4 0 0 0-4 4v2.4c0 .7-.2 1.4-.6 2L6 14.5V16h12v-1.5l-1.4-2.1c-.4-.6-.6-1.3-.6-2V8a4 4 0 0 0-4-4z"></path>
+                            <path d="M10.5 18a1.8 1.8 0 0 0 3 0"></path>
+                        </svg>
+
+                        {% set notif_count = (notifications|default([]))|length %}
+                        {% if notif_count > 0 %}
+                        <span class="bell-badge">
+                            {% if notif_count > 99 %}99+{% else %}{{ notif_count }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </button>
+
+                    <button type="button" class="top-icon-btn" aria-label="More options">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"></circle>
+                            <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"></circle>
+                            <circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"></circle>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="user-card">
+                    <div class="user-avatar">{{ (username or 'U')[0]|upper }}</div>
+                    <div class="user-meta">
+                        <div class="user-role">User</div>
+                        <div class="user-name">{{ username or "User" }}</div>
+                    </div>
+                </div>
+
+                <a href="/logout" class="logout-link">Logout</a>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<div class="alert-drawer-overlay" id="alertDrawerOverlay"></div>
+
+<aside class="alert-drawer" id="alertDrawer">
+    <div class="alert-drawer-header">
+        <div>
+            <div class="alert-drawer-title">Recent Alerts</div>
+            <div class="alert-drawer-subtitle">Latest notification types</div>
+        </div>
+
+        <button type="button" class="alert-drawer-close" id="alertDrawerClose" aria-label="Close alerts panel">
+            ×
+        </button>
+    </div>
+
+    <div class="alert-drawer-body">
+        {% set recent_notifications = notifications|default([]) %}
+        {% if recent_notifications %}
+            {% for item in recent_notifications[:12] %}
+            <div class="drawer-alert-card">
+                <div class="drawer-alert-top">
+                    <div class="drawer-alert-type">{{ item.violation_type }}</div>
+                    <div class="drawer-alert-time">{{ item.timestamp }}</div>
+                </div>
+                <div class="drawer-alert-message">{{ item.message }}</div>
+                <div class="drawer-alert-meta">
+                    Camera {{ item.camera_id }}{% if item.person_id %} | Person {{ item.person_id }}{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="drawer-empty-state">No recent alerts</div>
+        {% endif %}
+    </div>
+
+    <div class="alert-drawer-footer">
+        <a href="/notifications" class="drawer-view-all">Open Notifications Page</a>
+    </div>
+</aside>
+
+<script>
+(function () {
+    const bellBtn = document.getElementById("alertBellBtn");
+    const drawer = document.getElementById("alertDrawer");
+    const overlay = document.getElementById("alertDrawerOverlay");
+    const closeBtn = document.getElementById("alertDrawerClose");
+
+    if (!bellBtn || !drawer || !overlay || !closeBtn) return;
+
+    function openDrawer() {
+        drawer.classList.add("open");
+        overlay.classList.add("show");
+        document.body.classList.add("drawer-open");
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove("open");
+        overlay.classList.remove("show");
+        document.body.classList.remove("drawer-open");
+    }
+
+    bellBtn.addEventListener("click", openDrawer);
+    closeBtn.addEventListener("click", closeDrawer);
+    overlay.addEventListener("click", closeDrawer);
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeDrawer();
+    });
+})();
+</script>
+</body>
+</html>

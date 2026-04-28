@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-head">
+    <h1>Add Camera</h1>
+</section>
+
+<section class="add-camera-grid">
+    <div class="form-card">
+        <h3>Add Single Camera</h3>
+        <form method="post" action="/add-camera" class="ui-form">
+            <label>Camera Name</label>
+            <input type="text" name="name" placeholder="Gate #1" required>
+
+            <label>Camera Source</label>
+            <input type="text" name="source" placeholder="0 or C:/videos/a.mp4 or rtsp://..." required>
+
+            <label>Select Model</label>
+            <select name="selected_model" class="ui-select">
+                {% for item in model_options %}
+                <option value="{{ item.value }}">{{ item.label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Add Camera</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h3>Add Multiple Cameras</h3>
+        <form method="post" action="/cameras/bulk-form" class="ui-form">
+            <label>Default Model For All</label>
+            <select name="selected_model" class="ui-select">
+                {% for item in model_options %}
+                <option value="{{ item.value }}">{{ item.label }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Paste one camera per line</label>
+            <textarea name="camera_lines" rows="12" placeholder="Gate #1|C:/videos/a.mp4
+Gate #2|C:/videos/b.mp4
+Gate #3|rtsp://admin:1234@192.168.1.10/stream1
+Webcam|0"></textarea>
+
+            <button type="submit">Add All Cameras</button>
+        </form>
+    </div>
+</section>
+
+<section class="camera-table-card">
+    <h3>Added Cameras</h3>
+
+    <table class="camera-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Source</th>
+                <th>Model</th>
+                <th>Status</th>
+                <th>Error</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cam in cameras %}
+            <tr>
+                <td>{{ cam.id }}</td>
+                <td>{{ cam.name }}</td>
+                <td>{{ cam.source }}</td>
+                <td>
+                    <form method="post" action="/cameras/{{ cam.id }}/model" class="inline-model-form">
+                        <select name="selected_model" class="table-model-select" onchange="this.form.submit()">
+                            <option value="ppe" {% if cam.selected_model == 'ppe' %}selected{% endif %}>PPE Model</option>
+                            <option value="truck_inspection" {% if cam.selected_model == 'truck_inspection' %}selected{% endif %}>Truck Inspection</option>
+                            <option value="fire_alert" {% if cam.selected_model == 'fire_alert' %}selected{% endif %}>Fire Alert</option>
+                        </select>
+                    </form>
+                </td>
+                <td>{{ cam.last_status }}</td>
+                <td>{{ cam.last_error or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
