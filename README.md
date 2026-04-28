@@ -1,18 +1,18 @@
-# SafetyX Pro – AI-Powered CCTV Safety Monitoring Platform
+# The Brave Next – AI-Powered CCTV Safety Monitoring Platform
 
-SafetyX Pro by The Brave Next Ltd transforms existing CCTV cameras into real-time AI safety monitoring systems for PPE detection, hazard alerts, restricted-area monitoring, and compliance reporting.
+The Brave Next Ltd transforms existing CCTV cameras into real-time AI safety monitoring systems for PPE detection, hazard alerts, restricted-area monitoring, and compliance reporting.
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="SafetyX Pro Demo" width="100%">
+  <img src="docs/assets/demo.gif" alt="Safety Demo" width="100%">
 </p>
 
 ---
 
 ## Overview
 
-SafetyX Pro is an AI-powered industrial safety monitoring platform that converts traditional CCTV infrastructure into intelligent real-time safety systems. It detects PPE violations, unsafe behavior, fire/smoke risks, restricted-area breaches, and operational hazards without requiring new camera hardware.
+The Brave Next is an AI-powered industrial safety monitoring platform that converts traditional CCTV infrastructure into intelligent real-time safety systems. It detects PPE violations, unsafe behavior, fire/smoke risks, restricted-area breaches, and operational hazards without requiring new camera hardware.
 
-Built for industrial environments, SafetyX Pro helps organizations improve compliance, reduce incidents, and respond proactively through AI-driven monitoring, alerts, and analytics.
+Built for industrial environments, The Brave Next helps organizations improve compliance, reduce incidents, and respond proactively through AI-driven monitoring, alerts, and analytics.
 
 ---
 
